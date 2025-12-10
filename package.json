@@ -1,0 +1,74 @@
+{
+  "name": "crop-image-pro",
+  "version": "1.0.0",
+  "description": "Professional image cropping library with HEIC support, compression, and easy integration. Framework-agnostic vanilla JavaScript/TypeScript solution.",
+  "keywords": [
+    "image-crop",
+    "heic",
+    "compress-image",
+    "heic to jpg",
+    "heic to png",
+    "image processing",
+    "image conversion",
+    "image compression",
+    "crop image",
+    "image editor",
+    "heic2any",
+    "image manipulation",
+    "image upload",
+    "image optimization",
+    "vanilla javascript",
+    "typescript",
+    "image tools",
+    "framework-agnostic"
+  ],
+  "homepage": "https://github.com/jeslor/crop-image-pro#readme",
+  "bugs": {
+    "url": "https://github.com/jeslor/crop-image-pro/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeslor/crop-image-pro.git"
+  },
+  "license": "MIT",
+  "author": "Jeslor Ssozi",
+  "type": "module",
+  "main": "./dist/cropImagePro.js",
+  "module": "./dist/cropImagePro.js",
+  "types": "./dist/cropImagePro.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/cropImagePro.d.ts",
+      "import": "./dist/cropImagePro.js",
+      "require": "./dist/cropImagePro.cjs"
+    },
+    "./css": "./dist/cropImagePro.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "npm run clean && npm run build:ts && npm run copy-css",
+    "build:ts": "tsc",
+    "copy-css": "cp src/cropImagePro.css dist/cropImagePro.css",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "heic2any": "^0.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.2",
+    "jsdom": "^27.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

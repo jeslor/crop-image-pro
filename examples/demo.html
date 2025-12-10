@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crop Image Pro - Demo</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        padding: 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .container {
+        max-width: 600px;
+        width: 100%;
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      h1 {
+        color: #073d44;
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+      }
+
+      p {
+        color: #6b7280;
+        margin-bottom: 2rem;
+      }
+
+      .upload-area {
+        border: 2px dashed #d1d5db;
+        border-radius: 0.5rem;
+        padding: 3rem 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: #f9fafb;
+      }
+
+      .upload-area:hover {
+        border-color: #073d44;
+        background: #f3f4f6;
+      }
+
+      .upload-area.dragover {
+        border-color: #073d44;
+        background: #e5e7eb;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      .upload-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+
+      .upload-text {
+        color: #374151;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+      }
+
+      .upload-hint {
+        color: #9ca3af;
+        font-size: 0.875rem;
+      }
+
+      .preview-section {
+        margin-top: 2rem;
+        display: none;
+      }
+
+      .preview-section.active {
+        display: block;
+      }
+
+      .preview-title {
+        font-weight: 600;
+        color: #073d44;
+        margin-bottom: 1rem;
+      }
+
+      .preview-image {
+        width: 100%;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .info-box {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: #f0fdf4;
+        border-left: 4px solid #10b981;
+        border-radius: 0.25rem;
+      }
+
+      .info-box p {
+        margin: 0;
+        color: #065f46;
+        font-size: 0.875rem;
+      }
+
+      .btn {
+        margin-top: 1rem;
+        padding: 0.75rem 1.5rem;
+        background: #073d44;
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      .btn:hover {
+        background: #052c31;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🖼️ Crop Image Pro</h1>
+      <p>Professional image cropping with HEIC support</p>
+
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📁</div>
+        <div class="upload-text">Click to upload or drag and drop</div>
+        <div class="upload-hint">Supports JPG, PNG, HEIC (max 10MB)</div>
+        <input type="file" id="fileInput" accept="image/*,.heic" />
+      </div>
+
+      <div class="preview-section" id="previewSection">
+        <div class="preview-title">Preview</div>
+        <img id="previewImage" class="preview-image" alt="Preview" />
+        <div class="info-box">
+          <p id="infoText">Image cropped successfully!</p>
+        </div>
+        <button class="btn" id="resetBtn">Upload Another Image</button>
+      </div>
+    </div>
+
+    <!-- Import the library - CSS is embedded, but you can also use the standalone CSS file -->
+    <!-- <link rel="stylesheet" href="../dist/cropImagePro.css" /> -->
+    <script type="module">
+      import CropImagePro from "../dist/cropImagePro.js";
+
+      const uploadArea = document.getElementById("uploadArea");
+      const fileInput = document.getElementById("fileInput");
+      const previewSection = document.getElementById("previewSection");
+      const previewImage = document.getElementById("previewImage");
+      const infoText = document.getElementById("infoText");
+      const resetBtn = document.getElementById("resetBtn");
+
+      // Click to upload
+      uploadArea.addEventListener("click", () => {
+        fileInput.click();
+      });
+
+      // File input change
+      fileInput.addEventListener("change", handleFileSelect);
+
+      // Drag and drop
+      uploadArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadArea.classList.add("dragover");
+      });
+
+      uploadArea.addEventListener("dragleave", () => {
+        uploadArea.classList.remove("dragover");
+      });
+
+      uploadArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove("dragover");
+
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith("image/")) {
+          processFile(file);
+        }
+      });
+
+      // Reset button
+      resetBtn.addEventListener("click", () => {
+        previewSection.classList.remove("active");
+        fileInput.value = "";
+        URL.revokeObjectURL(previewImage.src);
+      });
+
+      async function handleFileSelect(e) {
+        const file = e.target.files[0];
+        if (file) {
+          processFile(file);
+        }
+      }
+
+      async function processFile(file) {
+        // Validate file
+        if (
+          !file.type.startsWith("image/") &&
+          !file.name.toLowerCase().endsWith(".heic")
+        ) {
+          alert("Please select an image file");
+          return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+          alert("File too large. Maximum 10MB");
+          return;
+        }
+
+        try {
+          // Create cropper instance
+          const cropper = new CropImagePro(file, "demo-image", {
+            aspectRatio: 16 / 9,
+            maxOutputSize: 1200,
+            compressionQuality: 0.7,
+          });
+
+          // Open crop modal
+          const result = await cropper.open();
+
+          // Show preview
+          previewImage.src = result.previewUrl;
+          previewSection.classList.add("active");
+
+          // Show file info
+          const sizeKB = (result.file.size / 1024).toFixed(2);
+          infoText.textContent = `Image cropped successfully! File size: ${sizeKB} KB`;
+
+          // Here you would typically upload to server
+          console.log("Cropped file:", result.file);
+          console.log("Preview URL:", result.previewUrl);
+        } catch (error) {
+          if (error.message !== "User cancelled") {
+            console.error("Error:", error);
+            alert("Failed to process image");
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

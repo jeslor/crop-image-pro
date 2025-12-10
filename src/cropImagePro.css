@@ -1,0 +1,477 @@
+/**
+ * CropImagePro Styles
+ * Professional CSS converted from Tailwind utility classes
+ */
+
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+}
+
+/* Overlay */
+.crop-image-pro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  padding: 1rem;
+  animation: fadeIn 200ms ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal container */
+.crop-image-pro-modal {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 42rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+/* Header */
+.crop-image-pro-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  flex-shrink: 0;
+}
+
+.crop-image-pro-title {
+  font-weight: 600;
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  color: #073d44;
+  margin: 0;
+}
+
+.crop-image-pro-close-btn {
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background-color 150ms ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+}
+
+.crop-image-pro-close-btn:hover {
+  background-color: #f3f4f6;
+}
+
+/* Content area */
+.crop-image-pro-content {
+  flex: 1;
+  overflow: auto;
+  padding: 1.5rem;
+  background-color: #f9fafb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.crop-image-pro-image-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  user-select: none;
+}
+
+.crop-image-pro-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  max-height: 60vh;
+  transition: transform 150ms ease-in-out;
+}
+
+/* Crop overlay */
+.crop-image-pro-crop-overlay {
+  position: absolute;
+  border: 2px solid #073d44;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+  cursor: move;
+  pointer-events: all;
+}
+
+/* Crop handles */
+.crop-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background-color: #073d44;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  pointer-events: all;
+}
+
+.crop-handle-nw {
+  top: -6px;
+  left: -6px;
+  cursor: nw-resize;
+}
+
+.crop-handle-ne {
+  top: -6px;
+  right: -6px;
+  cursor: ne-resize;
+}
+
+.crop-handle-sw {
+  bottom: -6px;
+  left: -6px;
+  cursor: sw-resize;
+}
+
+.crop-handle-se {
+  bottom: -6px;
+  right: -6px;
+  cursor: se-resize;
+}
+
+.crop-handle-n {
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: n-resize;
+}
+
+.crop-handle-s {
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: s-resize;
+}
+
+.crop-handle-e {
+  top: 50%;
+  right: -6px;
+  transform: translateY(-50%);
+  cursor: e-resize;
+}
+
+.crop-handle-w {
+  top: 50%;
+  left: -6px;
+  transform: translateY(-50%);
+  cursor: w-resize;
+}
+
+/* Controls section */
+.crop-image-pro-controls {
+  padding: 1rem;
+  border-top: 1px solid #f3f4f6;
+  background-color: #ffffff;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.crop-image-pro-tool-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.crop-image-pro-control-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Divider */
+.crop-image-pro-divider {
+  width: 1px;
+  height: 1.5rem;
+  background-color: #e5e7eb;
+  margin: 0 0.5rem;
+}
+
+/* Icon buttons */
+.crop-image-pro-icon-btn {
+  padding: 0.5rem;
+  color: #6b7280;
+  background: transparent;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: color 150ms ease-in-out;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.crop-image-pro-icon-btn:hover {
+  color: #073d44;
+}
+
+.crop-image-pro-icon-btn span {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+}
+
+.crop-image-pro-aspect-btn.active {
+  background-color: #f3f4f6;
+  color: #073d44;
+}
+
+/* Slider */
+.crop-image-pro-slider {
+  width: 8rem;
+  height: 0.25rem;
+  background-color: #e5e7eb;
+  border-radius: 0.5rem;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.crop-image-pro-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  background-color: #073d44;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 150ms ease-in-out;
+}
+
+.crop-image-pro-slider::-webkit-slider-thumb:hover {
+  background-color: #052c31;
+}
+
+.crop-image-pro-slider::-moz-range-thumb {
+  width: 1rem;
+  height: 1rem;
+  background-color: #073d44;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: background-color 150ms ease-in-out;
+}
+
+.crop-image-pro-slider::-moz-range-thumb:hover {
+  background-color: #052c31;
+}
+
+/* Action buttons */
+.crop-image-pro-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.crop-image-pro-btn {
+  height: 2.5rem;
+  padding: 0 1.5rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  cursor: pointer;
+  transition: all 150ms ease-in-out;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  outline: none;
+}
+
+.crop-image-pro-btn:focus-visible {
+  outline: 2px solid #073d44;
+  outline-offset: 2px;
+}
+
+.crop-image-pro-btn-secondary {
+  background-color: transparent;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.crop-image-pro-btn-secondary:hover {
+  background-color: #f9fafb;
+}
+
+.crop-image-pro-btn-primary {
+  background-color: #073d44;
+  color: #ffffff;
+  border: 1px solid transparent;
+}
+
+.crop-image-pro-btn-primary:hover {
+  background-color: #052c31;
+}
+
+.crop-image-pro-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Loading state */
+.crop-image-pro-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  color: #6b7280;
+}
+
+.crop-image-pro-spinner {
+  width: 2rem;
+  height: 2rem;
+  color: #073d44;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .crop-image-pro-overlay {
+    padding: 0.5rem;
+  }
+
+  .crop-image-pro-content {
+    padding: 1rem;
+  }
+
+  .crop-image-pro-tool-controls {
+    gap: 0.5rem;
+  }
+
+  .crop-image-pro-divider {
+    display: none;
+  }
+
+  .crop-image-pro-icon-btn span {
+    display: none;
+  }
+
+  .crop-image-pro-slider {
+    width: 5rem;
+  }
+
+  .crop-image-pro-actions {
+    padding-top: 0;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .crop-image-pro-crop-overlay {
+    border-width: 3px;
+  }
+
+  .crop-handle {
+    border-width: 3px;
+  }
+
+  .crop-image-pro-btn {
+    border-width: 2px;
+  }
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+  .crop-image-pro-modal {
+    background-color: #1f2937;
+  }
+
+  .crop-image-pro-header {
+    border-bottom-color: #374151;
+  }
+
+  .crop-image-pro-title {
+    color: #f9fafb;
+  }
+
+  .crop-image-pro-close-btn {
+    color: #9ca3af;
+  }
+
+  .crop-image-pro-close-btn:hover {
+    background-color: #374151;
+  }
+
+  .crop-image-pro-content {
+    background-color: #111827;
+  }
+
+  .crop-image-pro-controls {
+    background-color: #1f2937;
+    border-top-color: #374151;
+  }
+
+  .crop-image-pro-divider {
+    background-color: #4b5563;
+  }
+
+  .crop-image-pro-icon-btn {
+    color: #9ca3af;
+  }
+
+  .crop-image-pro-icon-btn:hover {
+    color: #f9fafb;
+  }
+
+  .crop-image-pro-aspect-btn.active {
+    background-color: #374151;
+    color: #f9fafb;
+  }
+
+  .crop-image-pro-slider {
+    background-color: #4b5563;
+  }
+
+  .crop-image-pro-btn-secondary {
+    color: #d1d5db;
+    border-color: #4b5563;
+  }
+
+  .crop-image-pro-btn-secondary:hover {
+    background-color: #374151;
+  }
+}
