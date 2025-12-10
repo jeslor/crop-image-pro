@@ -13,7 +13,7 @@ Professional image cropping library with HEIC support, compression, and easy int
 ✅ **Responsive Design** - Mobile-friendly with touch support  
 ✅ **Accessible** - ARIA labels and keyboard navigation  
 ✅ **Dark Mode Ready** - Automatic dark mode support  
-✅ **Zero Dependencies** (except heic2any for HEIC conversion)
+✅ **Zero Dependencies** (except heic2any for HEIC conversion and react-image-crop)
 
 ## Installation
 
