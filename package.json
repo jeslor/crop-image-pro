@@ -1,6 +1,6 @@
 {
   "name": "crop-image-pro",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Professional image cropping library with HEIC support, compression, and easy integration. Framework-agnostic vanilla JavaScript/TypeScript solution.",
   "keywords": [
     "image-crop",
