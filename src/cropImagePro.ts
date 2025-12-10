@@ -30,6 +30,8 @@ export class CropImagePro {
   private options: Required<CropImageProOptions>;
   private file: File;
   private fileName: string;
+  private isLoading = false;
+  private contentElement: HTMLElement | null = null;
 
   // Crop state
   private crop = {
@@ -70,18 +72,27 @@ export class CropImagePro {
   public async open(): Promise<CropResult> {
     return new Promise(async (resolve, reject) => {
       try {
-        // Load and convert image
-        const imgSrc = await this.loadImage();
-        this.imgSrc = imgSrc;
+        // Add styles first
+        this.injectStyles();
 
-        // Create modal UI
+        // Check if this is a HEIC file that needs conversion
+        const isHeic =
+          this.file.type === "image/heic" ||
+          this.file.name.toLowerCase().endsWith(".heic");
+
+        // Create modal UI first (with loading state if HEIC)
+        this.isLoading = isHeic;
         this.createModal(resolve, reject);
 
         // Add to DOM
         document.body.appendChild(this.container!);
 
-        // Add styles if not already added
-        this.injectStyles();
+        // Load and convert image (this may take time for HEIC)
+        const imgSrc = await this.loadImage();
+        this.imgSrc = imgSrc;
+
+        // Update content with actual image
+        this.showImageContent();
       } catch (error) {
         reject(error);
       }
@@ -195,9 +206,34 @@ export class CropImagePro {
   private createContent(): HTMLElement {
     const content = document.createElement("div");
     content.className = "crop-image-pro-content";
+    content.id = "crop-image-pro-content";
+    this.contentElement = content;
 
+    if (this.isLoading) {
+      // Show loading state
+      const loadingDiv = document.createElement("div");
+      loadingDiv.className = "crop-image-pro-loading";
+      loadingDiv.id = "crop-loading";
+      loadingDiv.innerHTML = `
+        ${this.getIconSVG("loader")}
+        <p>Converting image...</p>
+      `;
+      content.appendChild(loadingDiv);
+    } else {
+      // Show image content
+      this.createImageContent(content);
+    }
+
+    return content;
+  }
+
+  /**
+   * Creates the image wrapper with crop overlay
+   */
+  private createImageContent(content: HTMLElement): void {
     const imageWrapper = document.createElement("div");
     imageWrapper.className = "crop-image-pro-image-wrapper";
+    imageWrapper.id = "crop-image-wrapper";
 
     this.imgElement = document.createElement("img");
     this.imgElement.src = this.imgSrc;
@@ -215,8 +251,23 @@ export class CropImagePro {
 
     // Set up crop interaction
     this.setupCropInteraction(cropOverlay);
+  }
 
-    return content;
+  /**
+   * Shows the image content after loading is complete
+   */
+  private showImageContent(): void {
+    if (!this.contentElement) return;
+
+    // Remove loading state
+    const loadingDiv = document.getElementById("crop-loading");
+    if (loadingDiv) {
+      loadingDiv.remove();
+    }
+
+    // Add image content
+    this.isLoading = false;
+    this.createImageContent(this.contentElement);
   }
 
   /**
@@ -365,20 +416,34 @@ export class CropImagePro {
   private initializeCrop(): void {
     if (!this.imgElement) return;
 
-    const { width, height } = this.imgElement;
+    // Get the actual rendered dimensions of the image
+    const imgRect = this.imgElement.getBoundingClientRect();
+    const wrapper = document.getElementById("crop-image-wrapper");
+    if (!wrapper) return;
+
+    const wrapperRect = wrapper.getBoundingClientRect();
+
+    // Calculate image position within wrapper (for centering)
+    const imgOffsetX = imgRect.left - wrapperRect.left;
+    const imgOffsetY = imgRect.top - wrapperRect.top;
+
+    const imgWidth = imgRect.width;
+    const imgHeight = imgRect.height;
     const aspect = this.options.aspectRatio;
 
-    let cropWidth = width * 0.9;
+    // Calculate crop size (90% of image, constrained by aspect ratio)
+    let cropWidth = imgWidth * 0.9;
     let cropHeight = cropWidth / aspect;
 
-    if (cropHeight > height * 0.9) {
-      cropHeight = height * 0.9;
+    if (cropHeight > imgHeight * 0.9) {
+      cropHeight = imgHeight * 0.9;
       cropWidth = cropHeight * aspect;
     }
 
+    // Center the crop area on the image
     this.crop = {
-      x: (width - cropWidth) / 2,
-      y: (height - cropHeight) / 2,
+      x: imgOffsetX + (imgWidth - cropWidth) / 2,
+      y: imgOffsetY + (imgHeight - cropHeight) / 2,
       width: cropWidth,
       height: cropHeight,
       unit: "%",
@@ -461,13 +526,28 @@ export class CropImagePro {
   private handleDrag(e: MouseEvent): void {
     if (!this.imgElement) return;
 
+    const wrapper = document.getElementById("crop-image-wrapper");
+    if (!wrapper) return;
+
     const imgRect = this.imgElement.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+
+    // Calculate image offset within wrapper
+    const imgOffsetX = imgRect.left - wrapperRect.left;
+    const imgOffsetY = imgRect.top - wrapperRect.top;
+
     let newX = e.clientX - this.dragStart.x;
     let newY = e.clientY - this.dragStart.y;
 
-    // Constrain to image bounds
-    newX = Math.max(0, Math.min(newX, imgRect.width - this.crop.width));
-    newY = Math.max(0, Math.min(newY, imgRect.height - this.crop.height));
+    // Constrain to image bounds (accounting for image offset in wrapper)
+    newX = Math.max(
+      imgOffsetX,
+      Math.min(newX, imgOffsetX + imgRect.width - this.crop.width)
+    );
+    newY = Math.max(
+      imgOffsetY,
+      Math.min(newY, imgOffsetY + imgRect.height - this.crop.height)
+    );
 
     this.crop.x = newX;
     this.crop.y = newY;
@@ -480,7 +560,16 @@ export class CropImagePro {
   private handleResize(e: MouseEvent): void {
     if (!this.imgElement) return;
 
+    const wrapper = document.getElementById("crop-image-wrapper");
+    if (!wrapper) return;
+
     const imgRect = this.imgElement.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+
+    // Calculate image offset within wrapper
+    const imgOffsetX = imgRect.left - wrapperRect.left;
+    const imgOffsetY = imgRect.top - wrapperRect.top;
+
     const deltaX = e.clientX - this.dragStart.x;
     const deltaY = e.clientY - this.dragStart.y;
 
@@ -517,11 +606,19 @@ export class CropImagePro {
       }
     }
 
-    // Constrain to image bounds
-    newWidth = Math.max(50, Math.min(newWidth, imgRect.width - newX));
-    newHeight = Math.max(50, Math.min(newHeight, imgRect.height - newY));
-    newX = Math.max(0, Math.min(newX, imgRect.width - newWidth));
-    newY = Math.max(0, Math.min(newY, imgRect.height - newHeight));
+    // Constrain to image bounds (accounting for image offset)
+    const maxWidth = imgOffsetX + imgRect.width - newX;
+    const maxHeight = imgOffsetY + imgRect.height - newY;
+    newWidth = Math.max(50, Math.min(newWidth, maxWidth));
+    newHeight = Math.max(50, Math.min(newHeight, maxHeight));
+    newX = Math.max(
+      imgOffsetX,
+      Math.min(newX, imgOffsetX + imgRect.width - newWidth)
+    );
+    newY = Math.max(
+      imgOffsetY,
+      Math.min(newY, imgOffsetY + imgRect.height - newHeight)
+    );
 
     this.crop.width = newWidth;
     this.crop.height = newHeight;
@@ -573,6 +670,22 @@ export class CropImagePro {
       const image = this.imgElement;
       const canvas = this.canvas;
 
+      // Get image position offset for correct crop coordinates
+      const wrapper = document.getElementById("crop-image-wrapper");
+      let imgOffsetX = 0;
+      let imgOffsetY = 0;
+
+      if (wrapper) {
+        const imgRect = image.getBoundingClientRect();
+        const wrapperRect = wrapper.getBoundingClientRect();
+        imgOffsetX = imgRect.left - wrapperRect.left;
+        imgOffsetY = imgRect.top - wrapperRect.top;
+      }
+
+      // Adjust crop coordinates to be relative to image (not wrapper)
+      const cropX = this.crop.x - imgOffsetX;
+      const cropY = this.crop.y - imgOffsetY;
+
       const scaleX = image.naturalWidth / image.width;
       const scaleY = image.naturalHeight / image.height;
 
@@ -603,8 +716,8 @@ export class CropImagePro {
 
       ctx.drawImage(
         image,
-        this.crop.x * scaleX,
-        this.crop.y * scaleY,
+        cropX * scaleX,
+        cropY * scaleY,
         originalCropWidth,
         originalCropHeight,
         0,
