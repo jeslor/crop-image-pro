@@ -75,13 +75,8 @@ export class CropImagePro {
         // Add styles first
         this.injectStyles();
 
-        // Check if this is a HEIC file that needs conversion
-        const isHeic =
-          this.file.type === "image/heic" ||
-          this.file.name.toLowerCase().endsWith(".heic");
-
-        // Create modal UI first (with loading state if HEIC)
-        this.isLoading = isHeic;
+        // Always show loading state initially
+        this.isLoading = true;
         this.createModal(resolve, reject);
 
         // Add to DOM
@@ -216,7 +211,7 @@ export class CropImagePro {
       loadingDiv.id = "crop-loading";
       loadingDiv.innerHTML = `
         ${this.getIconSVG("loader")}
-        <p>Converting image...</p>
+        <p>Loading image...</p>
       `;
       content.appendChild(loadingDiv);
     } else {
