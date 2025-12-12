@@ -1,7 +1,7 @@
 # Crop Image Pro
 
 <p align="center">
-  <img src="sample.gif" width="fit" />
+  <img src="illustration.gif" width="fit" />
 </p>
 
 Professional image cropping library with HEIC support, compression, and easy integration. Framework-agnostic vanilla JavaScript/TypeScript solution that works seamlessly with any web application.
