@@ -25,7 +25,10 @@
     "frontend",
     "javascript",
     "typescript",
-    "npm-package"
+    "npm-package",
+    "open-source",
+    "vanilla-js",
+    "framework-agnostic"
   ],
   "homepage": "https://github.com/jeslor/crop-image-pro#readme",
   "bugs": {
