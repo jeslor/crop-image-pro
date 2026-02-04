@@ -135,7 +135,7 @@ export class CropImagePro {
    */
   private createModal(
     resolve: (result: CropResult) => void,
-    reject: (error: Error) => void
+    reject: (error: Error) => void,
   ): void {
     // Create container
     this.container = document.createElement("div");
@@ -270,7 +270,7 @@ export class CropImagePro {
    */
   private createControls(
     resolve: (result: CropResult) => void,
-    reject: (error: Error) => void
+    reject: (error: Error) => void,
   ): HTMLElement {
     const controls = document.createElement("div");
     controls.className = "crop-image-pro-controls";
@@ -306,9 +306,11 @@ export class CropImagePro {
     };
 
     const saveBtn = document.createElement("button");
+    saveBtn.type = "button";
     saveBtn.className = "crop-image-pro-btn crop-image-pro-btn-primary";
     saveBtn.innerHTML = this.getIconSVG("check") + "<span>Save Photo</span>";
-    saveBtn.onclick = async () => {
+    saveBtn.onclick = async (e: MouseEvent) => {
+      e.preventDefault();
       try {
         const result = await this.handleSave();
         this.close();
@@ -537,11 +539,11 @@ export class CropImagePro {
     // Constrain to image bounds (accounting for image offset in wrapper)
     newX = Math.max(
       imgOffsetX,
-      Math.min(newX, imgOffsetX + imgRect.width - this.crop.width)
+      Math.min(newX, imgOffsetX + imgRect.width - this.crop.width),
     );
     newY = Math.max(
       imgOffsetY,
-      Math.min(newY, imgOffsetY + imgRect.height - this.crop.height)
+      Math.min(newY, imgOffsetY + imgRect.height - this.crop.height),
     );
 
     this.crop.x = newX;
@@ -608,11 +610,11 @@ export class CropImagePro {
     newHeight = Math.max(50, Math.min(newHeight, maxHeight));
     newX = Math.max(
       imgOffsetX,
-      Math.min(newX, imgOffsetX + imgRect.width - newWidth)
+      Math.min(newX, imgOffsetX + imgRect.width - newWidth),
     );
     newY = Math.max(
       imgOffsetY,
-      Math.min(newY, imgOffsetY + imgRect.height - newHeight)
+      Math.min(newY, imgOffsetY + imgRect.height - newHeight),
     );
 
     this.crop.width = newWidth;
@@ -630,7 +632,7 @@ export class CropImagePro {
   private adjustScale(delta: number): void {
     this.scale = Math.max(0.5, Math.min(3, this.scale + delta));
     const slider = this.container?.querySelector(
-      ".crop-image-pro-slider"
+      ".crop-image-pro-slider",
     ) as HTMLInputElement;
     if (slider) slider.value = this.scale.toString();
     this.updateImageTransform();
@@ -718,7 +720,7 @@ export class CropImagePro {
         0,
         0,
         outWidth,
-        outHeight
+        outHeight,
       );
 
       canvas.toBlob(
@@ -740,7 +742,7 @@ export class CropImagePro {
           });
         },
         "image/jpeg",
-        this.options.compressionQuality
+        this.options.compressionQuality,
       );
     });
   }
