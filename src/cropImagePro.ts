@@ -788,8 +788,14 @@ export class CropImagePro {
 
     const style = document.createElement("style");
     style.id = "crop-image-pro-styles";
+    const { primaryColor, backgroundColor, overlayColor } = this.options.theme;
     style.textContent = `
       /* CropImagePro Styles */
+      :root {
+        --crop-image-pro-primary: ${primaryColor};
+        --crop-image-pro-background: ${backgroundColor};
+        --crop-image-pro-overlay: ${overlayColor};
+      }
       * { box-sizing: border-box; }
       
       .crop-image-pro-overlay {
@@ -799,7 +805,7 @@ export class CropImagePro {
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: rgba(0, 0, 0, 0.6);
+        background-color: var(--crop-image-pro-overlay);
         backdrop-filter: blur(4px);
         padding: 1rem;
         animation: cropImageProFadeIn 200ms ease-in;
@@ -811,7 +817,7 @@ export class CropImagePro {
       }
       
       .crop-image-pro-modal {
-        background-color: #ffffff;
+        background-color: var(--crop-image-pro-background);
         border-radius: 0.75rem;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         width: 100%;
@@ -835,7 +841,7 @@ export class CropImagePro {
         font-weight: 600;
         font-size: 1.125rem;
         line-height: 1.75rem;
-        color: #073d44;
+        color: var(--crop-image-pro-primary);
         margin: 0;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       }
@@ -861,7 +867,7 @@ export class CropImagePro {
         flex: 1;
         overflow: auto;
         padding: 1.5rem;
-        background-color: #f9fafb;
+        background-color: var(--crop-image-pro-background);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -886,8 +892,8 @@ export class CropImagePro {
       
       .crop-image-pro-crop-overlay {
         position: absolute;
-        border: 2px solid #073d44;
-        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+        border: 2px solid var(--crop-image-pro-primary);
+        box-shadow: 0 0 0 9999px var(--crop-image-pro-overlay);
         cursor: move;
         pointer-events: all;
       }
@@ -896,7 +902,7 @@ export class CropImagePro {
         position: absolute;
         width: 12px;
         height: 12px;
-        background-color: #073d44;
+        background-color: var(--crop-image-pro-primary);
         border: 2px solid #ffffff;
         border-radius: 50%;
         pointer-events: all;
@@ -914,7 +920,7 @@ export class CropImagePro {
       .crop-image-pro-controls {
         padding: 1rem;
         border-top: 1px solid #f3f4f6;
-        background-color: #ffffff;
+        background-color: var(--crop-image-pro-background);
         flex-shrink: 0;
         display: flex;
         flex-direction: column;
@@ -957,7 +963,7 @@ export class CropImagePro {
       }
       
       .crop-image-pro-icon-btn:hover {
-        color: #073d44;
+        color: var(--crop-image-pro-primary);
       }
       
       .crop-image-pro-icon-btn span {
@@ -968,7 +974,7 @@ export class CropImagePro {
       
       .crop-image-pro-aspect-btn.active {
         background-color: #f3f4f6;
-        color: #073d44;
+        color: var(--crop-image-pro-primary);
       }
       
       .crop-image-pro-slider {
@@ -987,20 +993,20 @@ export class CropImagePro {
         appearance: none;
         width: 1rem;
         height: 1rem;
-        background-color: #073d44;
+        background-color: var(--crop-image-pro-primary);
         border-radius: 50%;
         cursor: pointer;
         transition: background-color 150ms ease-in-out;
       }
       
       .crop-image-pro-slider::-webkit-slider-thumb:hover {
-        background-color: #052c31;
+        background-color: var(--crop-image-pro-primary);
       }
       
       .crop-image-pro-slider::-moz-range-thumb {
         width: 1rem;
         height: 1rem;
-        background-color: #073d44;
+        background-color: var(--crop-image-pro-primary);
         border-radius: 50%;
         border: none;
         cursor: pointer;
@@ -1008,7 +1014,7 @@ export class CropImagePro {
       }
       
       .crop-image-pro-slider::-moz-range-thumb:hover {
-        background-color: #052c31;
+        background-color: var(--crop-image-pro-primary);
       }
       
       .crop-image-pro-actions {
@@ -1036,7 +1042,7 @@ export class CropImagePro {
       }
       
       .crop-image-pro-btn:focus-visible {
-        outline: 2px solid #073d44;
+        outline: 2px solid var(--crop-image-pro-primary);
         outline-offset: 2px;
       }
       
@@ -1051,13 +1057,13 @@ export class CropImagePro {
       }
       
       .crop-image-pro-btn-primary {
-        background-color: #073d44;
+        background-color: var(--crop-image-pro-primary);
         color: #ffffff;
         border: 1px solid transparent;
       }
       
       .crop-image-pro-btn-primary:hover {
-        background-color: #052c31;
+        background-color: var(--crop-image-pro-primary);
       }
       
       .crop-image-pro-btn:disabled {
@@ -1076,7 +1082,7 @@ export class CropImagePro {
       .crop-image-pro-spinner {
         width: 2rem;
         height: 2rem;
-        color: #073d44;
+        color: var(--crop-image-pro-primary);
         animation: cropImageProSpin 1s linear infinite;
       }
       
