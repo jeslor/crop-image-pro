@@ -109,7 +109,7 @@ function ImageCropperExample() {
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .image-cropper-example {
           max-width: 400px;
           margin: 2rem auto;

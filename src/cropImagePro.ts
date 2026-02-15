@@ -23,11 +23,16 @@ export interface CropResult {
   blob: Blob;
 }
 
+type ResolvedTheme = Required<NonNullable<CropImageProOptions["theme"]>>;
+type ResolvedOptions = Omit<Required<CropImageProOptions>, "theme"> & {
+  theme: ResolvedTheme;
+};
+
 export class CropImagePro {
   private container: HTMLElement | null = null;
   private imgElement: HTMLImageElement | null = null;
   private canvas: HTMLCanvasElement | null = null;
-  private options: Required<CropImageProOptions>;
+  private options: ResolvedOptions;
   private file: File;
   private fileName: string;
   private isLoading = false;
@@ -64,6 +69,16 @@ export class CropImagePro {
         overlayColor: options.theme?.overlayColor ?? "rgba(0, 0, 0, 0.6)",
       },
     };
+  }
+
+  /**
+   * Apply theme CSS variables to the current overlay container
+   */
+  private applyThemeVariables(target: HTMLElement): void {
+    const { primaryColor, backgroundColor, overlayColor } = this.options.theme;
+    target.style.setProperty("--crop-image-pro-primary", primaryColor);
+    target.style.setProperty("--crop-image-pro-background", backgroundColor);
+    target.style.setProperty("--crop-image-pro-overlay", overlayColor);
   }
 
   /**
@@ -142,6 +157,7 @@ export class CropImagePro {
     this.container.className = "crop-image-pro-overlay";
     this.container.setAttribute("role", "dialog");
     this.container.setAttribute("aria-modal", "true");
+    this.applyThemeVariables(this.container);
 
     // Create modal
     const modal = document.createElement("div");

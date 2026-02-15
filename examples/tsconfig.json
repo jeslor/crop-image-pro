@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "baseUrl": "./",
+    "rootDir": "../",
+    "types": ["react", "react-dom"],
+    "paths": {
+      "crop-image-pro": ["../src/cropImagePro"],
+      "crop-image-pro/*": ["../src/*"]
+    }
+  },
+  "include": ["./**/*"]
+}
