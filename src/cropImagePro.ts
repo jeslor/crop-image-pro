@@ -883,6 +883,7 @@ export class CropImagePro {
         flex: 1;
         overflow: auto;
         padding: 1.5rem;
+        border: 2px solid var(--crop-image-pro-background);
         background-color: var(--crop-image-pro-background);
         display: flex;
         align-items: center;
