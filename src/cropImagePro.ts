@@ -538,7 +538,6 @@ export class CropImagePro {
    */
   private handleDrag(e: MouseEvent): void {
     if (!this.imgElement) return;
-
     const wrapper = document.getElementById("crop-image-wrapper");
     if (!wrapper) return;
 
@@ -552,19 +551,56 @@ export class CropImagePro {
     let newX = e.clientX - this.dragStart.x;
     let newY = e.clientY - this.dragStart.y;
 
-    // Constrain to image bounds (accounting for image offset in wrapper)
-    newX = Math.max(
-      imgOffsetX,
-      Math.min(newX, imgOffsetX + imgRect.width - this.crop.width),
-    );
-    newY = Math.max(
-      imgOffsetY,
-      Math.min(newY, imgOffsetY + imgRect.height - this.crop.height),
-    );
+    // Only allow free movement if image is zoomed and bigger than wrapper
+    const isZoomed =
+      this.scale > 1 &&
+      (imgRect.width > wrapperRect.width ||
+        imgRect.height > wrapperRect.height);
+    if (isZoomed) {
+      // Allow crop area to move over the entire zoomed image
+      newX = Math.max(
+        imgOffsetX,
+        Math.min(newX, imgOffsetX + imgRect.width - this.crop.width),
+      );
+      newY = Math.max(
+        imgOffsetY,
+        Math.min(newY, imgOffsetY + imgRect.height - this.crop.height),
+      );
+    } else {
+      // Constrain to wrapper bounds
+      newX = Math.max(0, Math.min(newX, wrapperRect.width - this.crop.width));
+      newY = Math.max(0, Math.min(newY, wrapperRect.height - this.crop.height));
+    }
 
     this.crop.x = newX;
     this.crop.y = newY;
     this.updateCropOverlay();
+
+    // Ensure crop area is visible by scrolling the wrapper if needed (when zoomed)
+    if (isZoomed && wrapper) {
+      // Get crop overlay position relative to wrapper
+      const overlay = document.getElementById("crop-overlay");
+      if (overlay) {
+        const overlayRect = overlay.getBoundingClientRect();
+        // Calculate scroll deltas for each direction
+        const leftDelta = overlayRect.left - wrapperRect.left;
+        const rightDelta = overlayRect.right - wrapperRect.right;
+        const topDelta = overlayRect.top - wrapperRect.top;
+        const bottomDelta = overlayRect.bottom - wrapperRect.bottom;
+
+        // Only scroll if overlay is out of view
+        if (leftDelta < 0) {
+          wrapper.scrollLeft += leftDelta;
+        } else if (rightDelta > 0) {
+          wrapper.scrollLeft += rightDelta;
+        }
+        if (topDelta < 0) {
+          wrapper.scrollTop += topDelta;
+        } else if (bottomDelta > 0) {
+          wrapper.scrollTop += bottomDelta;
+        }
+      }
+    }
   }
 
   /**
@@ -668,6 +704,12 @@ export class CropImagePro {
   private updateImageTransform(): void {
     if (!this.imgElement) return;
     this.imgElement.style.transform = `scale(${this.scale}) rotate(${this.rotate}deg)`;
+    // Keep crop area size fixed visually (not zoomed with image)
+    const overlay = document.getElementById("crop-overlay");
+    if (overlay) {
+      overlay.style.transform = `scale(${1 / this.scale})`;
+      overlay.style.transformOrigin = "top left";
+    }
   }
 
   /**

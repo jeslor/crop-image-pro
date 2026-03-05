@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -12,7 +12,8 @@
       }
 
       body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           "Helvetica Neue", Arial, sans-serif;
         padding: 2rem;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -170,6 +171,7 @@
 
       // Click to upload
       uploadArea.addEventListener("click", () => {
+        alert("Please select an image file to crop");
         fileInput.click();
       });
 

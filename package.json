@@ -63,7 +63,8 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "heic2any": "^0.0.4"
+    "heic2any": "^0.0.4",
+    "vue": "^3.5.29"
   },
   "devDependencies": {
     "@types/node": "^24.10.2",
