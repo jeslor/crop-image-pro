@@ -362,15 +362,15 @@ export class CropImagePro {
 
     const slider = document.createElement("input");
     slider.type = "range";
-    slider.min = "1";
-    slider.max = "3";
-    slider.step = "0.1";
+    slider.min = "0.1"; // updated to fitScale in initializeCrop
+    slider.max = "3"; // updated to max(3, coverScale) in initializeCrop
+    slider.step = "0.05";
     slider.value = "1";
     slider.className = "crop-image-pro-slider";
     slider.oninput = (e) => {
-      const minScale = this.getMinScale();
+      const fitScale = this.getFitScale();
       this.scale = Math.max(
-        minScale,
+        fitScale,
         parseFloat((e.target as HTMLInputElement).value),
       );
       this.updateImageTransform();
@@ -440,36 +440,42 @@ export class CropImagePro {
     const wrapper = document.getElementById("crop-image-wrapper");
     if (!wrapper) return;
 
-    // Enforce minimum scale so image always covers the wrapper
-    const minScale = this.getMinScale();
-    if (this.scale < minScale) {
-      this.scale = minScale;
-      const slider = this.container?.querySelector(
-        ".crop-image-pro-slider",
-      ) as HTMLInputElement;
-      if (slider) {
-        slider.min = minScale.toString();
-        slider.value = this.scale.toString();
-      }
-      this.applyImageTransformCSS();
-      this.constrainPan();
+    // Start at cover scale (image fills wrapper). Allow zooming out to fit scale
+    // so the user can see the entire image and crop any part of it.
+    const coverScale = this.getCoverScale();
+    const fitScale = this.getFitScale();
+    if (this.scale < coverScale) {
+      this.scale = coverScale;
     }
 
-    const wW = wrapper.clientWidth;
-    const wH = wrapper.clientHeight;
+    const slider = this.container?.querySelector(
+      ".crop-image-pro-slider",
+    ) as HTMLInputElement;
+    if (slider) {
+      slider.min = fitScale.toString();
+      slider.max = Math.max(3, coverScale).toString();
+      slider.value = this.scale.toString();
+    }
+    this.applyImageTransformCSS();
+    this.constrainPan();
+
     const aspect = this.options.aspectRatio;
 
-    // 90% of wrapper, constrained by aspect
-    let cropWidth = wW * 0.9;
+    // Centre the initial crop within the visible image area
+    const bounds = this.getImageBoundsInWrapper();
+    const availW = bounds.right - bounds.left;
+    const availH = bounds.bottom - bounds.top;
+
+    let cropWidth = availW * 0.9;
     let cropHeight = cropWidth / aspect;
-    if (cropHeight > wH * 0.9) {
-      cropHeight = wH * 0.9;
+    if (cropHeight > availH * 0.9) {
+      cropHeight = availH * 0.9;
       cropWidth = cropHeight * aspect;
     }
 
     this.crop = {
-      x: (wW - cropWidth) / 2,
-      y: (wH - cropHeight) / 2,
+      x: bounds.left + (availW - cropWidth) / 2,
+      y: bounds.top + (availH - cropHeight) / 2,
       width: cropWidth,
       height: cropHeight,
       unit: "%",
@@ -483,16 +489,20 @@ export class CropImagePro {
    * Does NOT reset crop size or re-centre — just ensures it fits.
    */
   private constrainCropToBounds(): void {
-    const wrapper = document.getElementById("crop-image-wrapper");
-    if (!wrapper) return;
+    const bounds = this.getImageBoundsInWrapper();
+    const maxW = bounds.right - bounds.left;
+    const maxH = bounds.bottom - bounds.top;
 
-    const wW = wrapper.clientWidth;
-    const wH = wrapper.clientHeight;
-
-    this.crop.width = Math.min(this.crop.width, wW);
-    this.crop.height = Math.min(this.crop.height, wH);
-    this.crop.x = Math.max(0, Math.min(this.crop.x, wW - this.crop.width));
-    this.crop.y = Math.max(0, Math.min(this.crop.y, wH - this.crop.height));
+    this.crop.width = Math.min(this.crop.width, maxW);
+    this.crop.height = Math.min(this.crop.height, maxH);
+    this.crop.x = Math.max(
+      bounds.left,
+      Math.min(this.crop.x, bounds.right - this.crop.width),
+    );
+    this.crop.y = Math.max(
+      bounds.top,
+      Math.min(this.crop.y, bounds.bottom - this.crop.height),
+    );
 
     this.updateCropOverlay();
   }
@@ -588,8 +598,9 @@ export class CropImagePro {
     const desiredX = e.clientX - this.dragStart.x;
     const desiredY = e.clientY - this.dragStart.y;
 
-    // ── Smooth auto-pan when zoomed ──
-    if (this.scale > 1) {
+    // ── Smooth auto-pan when image is zoomed past the cover scale ──
+    const coverScale = this.getCoverScale();
+    if (this.scale > coverScale) {
       const { w: baseW, h: baseH } = this.getBaseImageSize();
       const s = this.scale;
       const speed = CropImagePro.PAN_SPEED;
@@ -622,9 +633,16 @@ export class CropImagePro {
       this.applyImageTransformCSS();
     }
 
-    // Clamp crop to wrapper bounds (image always covers the wrapper)
-    this.crop.x = Math.max(0, Math.min(desiredX, wW - this.crop.width));
-    this.crop.y = Math.max(0, Math.min(desiredY, wH - this.crop.height));
+    // Clamp crop to the actual image area (handles both zoomed-in and zoomed-out)
+    const bounds = this.getImageBoundsInWrapper();
+    this.crop.x = Math.max(
+      bounds.left,
+      Math.min(desiredX, bounds.right - this.crop.width),
+    );
+    this.crop.y = Math.max(
+      bounds.top,
+      Math.min(desiredY, bounds.bottom - this.crop.height),
+    );
     this.updateCropOverlay();
   }
 
@@ -635,9 +653,6 @@ export class CropImagePro {
     if (!this.imgElement) return;
     const wrapper = document.getElementById("crop-image-wrapper");
     if (!wrapper) return;
-
-    const wW = wrapper.clientWidth;
-    const wH = wrapper.clientHeight;
 
     const deltaX = e.clientX - this.dragStart.x;
     const deltaY = e.clientY - this.dragStart.y;
@@ -672,11 +687,14 @@ export class CropImagePro {
       }
     }
 
-    // Clamp to wrapper bounds
-    newWidth = Math.max(50, Math.min(newWidth, wW));
-    newHeight = Math.max(50, Math.min(newHeight, wH));
-    newX = Math.max(0, Math.min(newX, wW - newWidth));
-    newY = Math.max(0, Math.min(newY, wH - newHeight));
+    // Clamp to the actual image area
+    const bounds = this.getImageBoundsInWrapper();
+    const availW = bounds.right - bounds.left;
+    const availH = bounds.bottom - bounds.top;
+    newWidth = Math.max(50, Math.min(newWidth, availW));
+    newHeight = Math.max(50, Math.min(newHeight, availH));
+    newX = Math.max(bounds.left, Math.min(newX, bounds.right - newWidth));
+    newY = Math.max(bounds.top, Math.min(newY, bounds.bottom - newHeight));
 
     this.crop.width = newWidth;
     this.crop.height = newHeight;
@@ -691,13 +709,16 @@ export class CropImagePro {
    * Adjust scale
    */
   private adjustScale(delta: number): void {
-    const minScale = this.getMinScale();
-    this.scale = Math.max(minScale, Math.min(3, this.scale + delta));
+    const fitScale = this.getFitScale();
+    const coverScale = this.getCoverScale();
+    const maxScale = Math.max(3, coverScale);
+    this.scale = Math.max(fitScale, Math.min(maxScale, this.scale + delta));
     const slider = this.container?.querySelector(
       ".crop-image-pro-slider",
     ) as HTMLInputElement;
     if (slider) {
-      slider.min = minScale.toString();
+      slider.min = fitScale.toString();
+      slider.max = maxScale.toString();
       slider.value = this.scale.toString();
     }
     this.updateImageTransform();
@@ -728,7 +749,7 @@ export class CropImagePro {
    * Return the minimum scale that guarantees the image covers
    * the entire wrapper (no white/empty areas).
    */
-  private getMinScale(): number {
+  private getCoverScale(): number {
     const wrapper = document.getElementById("crop-image-wrapper");
     if (!wrapper) return 1;
     const { w: baseW, h: baseH } = this.getBaseImageSize();
@@ -736,6 +757,62 @@ export class CropImagePro {
     const wW = wrapper.clientWidth;
     const wH = wrapper.clientHeight;
     return Math.max(1, wW / baseW, wH / baseH);
+  }
+
+  /**
+   * Return the minimum scale at which the entire image fits within the wrapper.
+   * Below this scale the image would be smaller than the wrapper in every dimension.
+   */
+  private getFitScale(): number {
+    const wrapper = document.getElementById("crop-image-wrapper");
+    if (!wrapper) return 1;
+    const { w: baseW, h: baseH } = this.getBaseImageSize();
+    if (baseW === 0 || baseH === 0) return 1;
+    const wW = wrapper.clientWidth;
+    const wH = wrapper.clientHeight;
+    // The smaller ratio ensures the image fits in both dimensions
+    return Math.min(wW / baseW, wH / baseH);
+  }
+
+  /**
+   * Return the bounding box (in wrapper-local px) of the rendered image.
+   * When the image fully covers the wrapper in a dimension, that edge is
+   * clamped to [0, wW] / [0, wH] so the crop cannot leave the wrapper.
+   */
+  private getImageBoundsInWrapper(): {
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+  } {
+    const wrapper = document.getElementById("crop-image-wrapper");
+    if (!wrapper) return { left: 0, top: 0, right: 0, bottom: 0 };
+    const { w: baseW, h: baseH } = this.getBaseImageSize();
+    const wW = wrapper.clientWidth;
+    const wH = wrapper.clientHeight;
+    const s = this.scale;
+
+    let left: number, right: number, top: number, bottom: number;
+
+    if (baseW * s >= wW) {
+      // Image covers wrapper horizontally — crop stays within wrapper edges
+      left = 0;
+      right = wW;
+    } else {
+      // Image is narrower than wrapper — constrain to actual image area
+      left = wW / 2 + this.panX - (baseW * s) / 2;
+      right = wW / 2 + this.panX + (baseW * s) / 2;
+    }
+
+    if (baseH * s >= wH) {
+      top = 0;
+      bottom = wH;
+    } else {
+      top = wH / 2 + this.panY - (baseH * s) / 2;
+      bottom = wH / 2 + this.panY + (baseH * s) / 2;
+    }
+
+    return { left, top, right, bottom };
   }
 
   /**
