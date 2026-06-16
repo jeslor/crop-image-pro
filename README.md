@@ -479,7 +479,7 @@ See the [examples](./examples) directory for complete working examples:
 
 ## License
 
-MIT © Jeslor Ssozi
+MIT © Jeslor Ssozi [license](https://github.com/jeslor/crop-image-pro/blob/main/LICENSE)
 
 ## Contributing
 
